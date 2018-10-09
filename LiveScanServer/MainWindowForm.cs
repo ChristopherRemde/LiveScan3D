@@ -54,6 +54,9 @@ namespace KinectServer
         //Body data from all of the sensors
         List<Body> lAllBodies = new List<Body>();
 
+        //Variable for saving camera poses
+        List<AffineTransform> AllCameraPosesForSaving = new List<AffineTransform>();
+
         bool bServerRunning = false;
         bool bRecording = false;
         bool bSaving = false;
@@ -190,6 +193,8 @@ namespace KinectServer
 
             string outDir = "out" + "\\" + txtSeqName.Text + "\\";
             DirectoryInfo di = Directory.CreateDirectory(outDir);
+
+            saveCamPoseFile(outDir); //Saves the Camera Poses to a file in the same directory as the pointclouds
 
             BackgroundWorker worker = (BackgroundWorker)sender;
             //This loop is running till it is either cancelled (using the btRecord button), or till there are no more stored frames.
@@ -497,6 +502,35 @@ namespace KinectServer
                 listBoxItems.Add(socketList[i].sSocketState);
 
             lClientListBox.DataSource = listBoxItems;
+        }
+
+        private void saveCamPoseFile(string saveToThisDir)
+        {
+            string CamPoseFullFilePath = saveToThisDir + "\\CamPose.txt";
+
+            AllCameraPosesForSaving = oServer.lCameraPoses;  //Get all current camera transforms
+
+            using (StreamWriter sw = File.CreateText(CamPoseFullFilePath))
+            {
+                sw.WriteLine("CamPoseFile for the LiveScan Meshing Software by ChrisR");
+                sw.WriteLine("");
+
+                for (int i = 0; i < AllCameraPosesForSaving.Count; i++)
+                {
+                    sw.WriteLine("CamNo = " + (i + 1));
+
+                    //Position of the cameras
+                    sw.WriteLine("TranslateX " + AllCameraPosesForSaving[i].t[0]);   
+                    sw.WriteLine("TranslateY " + AllCameraPosesForSaving[i].t[1]);
+                    sw.WriteLine("TranslateZ " + AllCameraPosesForSaving[i].t[2]);
+
+                    //Rotation Matrice of the Cameras
+                    sw.WriteLine("RotateMatriceX " + AllCameraPosesForSaving[i].R[0, 0] + " " + AllCameraPosesForSaving[i].R[0, 1] + " " + AllCameraPosesForSaving[i].R[0, 2]);
+                    sw.WriteLine("RotateMatriceY " + AllCameraPosesForSaving[i].R[1, 0] + " " + AllCameraPosesForSaving[i].R[1, 1] + " " + AllCameraPosesForSaving[i].R[1, 2]);
+                    sw.WriteLine("RotateMatriceZ " + AllCameraPosesForSaving[i].R[2, 0] + " " + AllCameraPosesForSaving[i].R[2, 1] + " " + AllCameraPosesForSaving[i].R[2, 2]);
+                    sw.WriteLine("");
+                }
+            }
         }
     }
 }
