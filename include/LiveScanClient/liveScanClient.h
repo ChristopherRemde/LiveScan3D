@@ -21,6 +21,7 @@
 #include "utils.h"
 #include "KinectCapture.h"
 #include "frameFileWriterReader.h"
+#include <opencv2/opencv.hpp>
 #include <thread>
 #include <mutex>
 
@@ -95,5 +96,6 @@ private:
 	void ShowFPS();
 	void ReadIPFromFile();
 	void WriteIPToFile();
+	void createAlphaMat(cv::Mat &mat);
 };
 

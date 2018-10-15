@@ -1,0 +1,18 @@
+CamPoseFile for the LiveScan Meshing Software by ChrisR
+
+CamNo = 1
+TranslateX -0,7245017
+TranslateY -1,802722
+TranslateZ 1,534628
+RotateMatriceX -0,845334 0,19422 0,497683
+RotateMatriceY 0,533984 0,278485 0,798315
+RotateMatriceZ 0,0164513 0,940598 -0,339124
+
+CamNo = 2
+TranslateX 0,3662429
+TranslateY 1,271178
+TranslateZ 1,50097
+RotateMatriceX 0,995375 -0,0407905 -0,086976
+RotateMatriceY -0,0948405 -0,561411 -0,822085
+RotateMatriceZ -0,015296 0,826531 -0,562683
+
