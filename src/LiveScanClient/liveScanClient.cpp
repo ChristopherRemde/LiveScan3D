@@ -20,6 +20,9 @@
 #include <strsafe.h>
 #include <fstream>
 #include "zstd.h"
+#include <opencv2/opencv.hpp> 
+
+
 
 std::mutex m_mSocketThreadMutex;
 
@@ -362,6 +365,27 @@ LRESULT CALLBACK LiveScanClient::DlgProc(HWND hWnd, UINT message, WPARAM wParam,
 					SetDlgItemTextA(m_hWnd, IDC_BUTTON_SWITCH, "Show depth");
 				}
 			}
+
+			if (IDC_BUTTON1 == LOWORD(wParam) && BN_CLICKED == HIWORD(wParam)) 
+
+			{
+				// Create mat with alpha channel
+				cv::Mat mat(480, 640, CV_8UC4);
+				createAlphaMat(mat);
+
+				vector<int> compression_params;
+				compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+				compression_params.push_back(9);
+
+				try {
+					imwrite("alpha.png", mat, compression_params);
+				}
+				catch (runtime_error& ex) {
+					fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+					return 1;
+				}
+			}
+
             break;
     }
 
@@ -813,3 +837,22 @@ void LiveScanClient::WriteIPToFile()
 	file << lastUsedIPAddress;
 	file.close();
 }
+
+
+
+
+void LiveScanClient::createAlphaMat(cv::Mat &mat)
+{
+	CV_Assert(mat.channels() == 4);
+	for (int i = 0; i < mat.rows; ++i) {
+		for (int j = 0; j < mat.cols; ++j) {
+			cv::Vec4b& bgra = mat.at<cv::Vec4b>(i, j);
+			bgra[0] = UCHAR_MAX; // Blue
+			bgra[1] = cv::saturate_cast<uchar>((float(mat.cols - j)) / ((float)mat.cols) * UCHAR_MAX); // Green
+			bgra[2] = cv::saturate_cast<uchar>((float(mat.rows - i)) / ((float)mat.rows) * UCHAR_MAX); // Red
+			bgra[3] = cv::saturate_cast<uchar>(0.5 * (bgra[1] + bgra[2])); // Alpha
+		}
+	}
+}
+
+

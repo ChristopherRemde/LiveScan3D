@@ -517,18 +517,12 @@ namespace KinectServer
 
                 for (int i = 0; i < AllCameraPosesForSaving.Count; i++)
                 {
-                    sw.WriteLine("CamNo = " + (i + 1));
+                    sw.WriteLine("CamNo = " + i);
 
                     //Position of the cameras
-                    sw.WriteLine("TranslateX " + AllCameraPosesForSaving[i].t[0]);   
-                    sw.WriteLine("TranslateY " + AllCameraPosesForSaving[i].t[1]);
-                    sw.WriteLine("TranslateZ " + AllCameraPosesForSaving[i].t[2]);
-
-                    //Rotation Matrice of the Cameras
-                    sw.WriteLine("RotateMatriceX " + AllCameraPosesForSaving[i].R[0, 0] + " " + AllCameraPosesForSaving[i].R[0, 1] + " " + AllCameraPosesForSaving[i].R[0, 2]);
-                    sw.WriteLine("RotateMatriceY " + AllCameraPosesForSaving[i].R[1, 0] + " " + AllCameraPosesForSaving[i].R[1, 1] + " " + AllCameraPosesForSaving[i].R[1, 2]);
-                    sw.WriteLine("RotateMatriceZ " + AllCameraPosesForSaving[i].R[2, 0] + " " + AllCameraPosesForSaving[i].R[2, 1] + " " + AllCameraPosesForSaving[i].R[2, 2]);
-                    sw.WriteLine("");
+                    sw.WriteLine("TranslateX = " + AllCameraPosesForSaving[i].t[0]);   
+                    sw.WriteLine("TranslateY = " + AllCameraPosesForSaving[i].t[1]);
+                    sw.WriteLine("TranslateZ = " + AllCameraPosesForSaving[i].t[2]);
                 }
             }
         }
