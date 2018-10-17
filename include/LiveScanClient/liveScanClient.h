@@ -49,6 +49,8 @@ private:
 	int m_nFilterNeighbors;
 	float m_fFilterThreshold;
 
+	int frameCounter;
+
 	bool m_bCaptureFrame;
 	bool m_bConnected;
 	bool m_bConfirmCaptured;
@@ -56,6 +58,8 @@ private:
 	bool m_bShowDepth;
 	bool m_bFrameCompression;
 	int m_iCompressionLevel;
+
+	bool isCapturingVideo;
 
 	FrameFileWriterReader m_framesFileWriterReader;
 
@@ -97,5 +101,8 @@ private:
 	void ReadIPFromFile();
 	void WriteIPToFile();
 	void createAlphaMat(cv::Mat &mat);
+	int captureVideo();
+
+
 };
 

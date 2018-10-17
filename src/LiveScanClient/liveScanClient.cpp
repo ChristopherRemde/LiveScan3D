@@ -21,6 +21,7 @@
 #include <fstream>
 #include "zstd.h"
 #include <opencv2/opencv.hpp> 
+#include <thread>
 
 
 
@@ -41,13 +42,13 @@ int APIENTRY wWinMain(
 }
 
 LiveScanClient::LiveScanClient() :
-    m_hWnd(NULL),
-    m_nLastCounter(0),
-    m_nFramesSinceUpdate(0),
-    m_fFreq(0),
-    m_nNextStatusTime(0LL),
-    m_pD2DFactory(NULL),
-    m_pDrawColor(NULL),
+	m_hWnd(NULL),
+	m_nLastCounter(0),
+	m_nFramesSinceUpdate(0),
+	m_fFreq(0),
+	m_nNextStatusTime(0LL),
+	m_pD2DFactory(NULL),
+	m_pDrawColor(NULL),
 	m_pDepthRGBX(NULL),
 	m_pCameraSpaceCoordinates(NULL),
 	m_pColorCoordinatesOfDepth(NULL),
@@ -65,7 +66,9 @@ LiveScanClient::LiveScanClient() :
 	m_iCompressionLevel(2),
 	m_pClientSocket(NULL),
 	m_nFilterNeighbors(10),
-	m_fFilterThreshold(0.01f)
+	m_fFilterThreshold(0.01f),
+	isCapturingVideo(false),
+	frameCounter(0)
 {
 	pCapture = new KinectCapture();
 
@@ -369,21 +372,23 @@ LRESULT CALLBACK LiveScanClient::DlgProc(HWND hWnd, UINT message, WPARAM wParam,
 			if (IDC_BUTTON1 == LOWORD(wParam) && BN_CLICKED == HIWORD(wParam)) 
 
 			{
-				// Create mat with alpha channel
-				cv::Mat mat(480, 640, CV_8UC4);
-				createAlphaMat(mat);
 
-				vector<int> compression_params;
-				compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-				compression_params.push_back(9);
 
-				try {
-					imwrite("alpha.png", mat, compression_params);
+				if (isCapturingVideo == false) 
+				{
+					isCapturingVideo = true;
+					thread videoCapThread(&LiveScanClient::captureVideo);
+					videoCapThread.detach();
 				}
-				catch (runtime_error& ex) {
-					fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-					return 1;
+
+				else
+				{
+					isCapturingVideo = false;
 				}
+
+
+
+				
 			}
 
             break;
@@ -841,7 +846,7 @@ void LiveScanClient::WriteIPToFile()
 
 
 
-void LiveScanClient::createAlphaMat(cv::Mat &mat)
+void LiveScanClient::createAlphaMat(cv::Mat &mat) //Test for creating image in OpenCV. Not used anymore, pending for deletion
 {
 	CV_Assert(mat.channels() == 4);
 	for (int i = 0; i < mat.rows; ++i) {
@@ -853,6 +858,49 @@ void LiveScanClient::createAlphaMat(cv::Mat &mat)
 			bgra[3] = cv::saturate_cast<uchar>(0.5 * (bgra[1] + bgra[2])); // Alpha
 		}
 	}
+}
+
+
+
+int LiveScanClient::captureVideo() {  //Code from https://www.learnopencv.com/read-write-and-display-a-video-using-opencv-cpp-python/
+
+	// Create a VideoCapture object and use camera to capture the video
+	cv::VideoCapture cap(0);
+
+	// Check if camera opened successfully
+	if (!cap.isOpened())
+	{
+		cout << "Error opening video stream" << endl;
+		return -1;
+	}
+
+	// Default resolution of the frame is obtained.The default resolution is system dependent. 
+	int frame_width = cap.get(CV_CAP_PROP_FRAME_WIDTH);
+	int frame_height = cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+
+	// Define the codec and create VideoWriter object.The output is stored in 'outcpp.avi' file. 
+	cv::VideoWriter video("outcpp.avi", CV_FOURCC('M', 'J', 'P', 'G'), 10, cv::Size(frame_width, frame_height));
+	while (isCapturingVideo == true)
+	{
+		cv::Mat frame;
+
+		// Capture frame-by-frame 
+		cap >> frame;
+
+		// If the frame is empty, break immediately
+		if (frame.empty())
+			break;
+
+		// Write the frame into the file 'outcpp.avi'
+		video.write(frame);		
+	}
+
+	// When everything done, release the video capture and write object
+	cap.release();
+	video.release();
+
+	// Closes all the windows
+	return 0;
 }
 
 
