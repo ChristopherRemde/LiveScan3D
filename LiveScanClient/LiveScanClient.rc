@@ -15,7 +15,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -49,7 +49,6 @@ BEGIN
     LTEXT           "",IDC_STATUS,0,402,642,11,SS_SUNKEN
     DEFPUSHBUTTON   "Show depth",IDC_BUTTON_SWITCH,282,373,90,12
     LTEXT           "Server IP address:",IDC_STATIC,389,374,82,10
-    DEFPUSHBUTTON   "Take Picture",IDC_BUTTON_PIC,13,377,50,14
 END
 
 
@@ -97,7 +96,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -14,6 +14,12 @@
 //    }
 #include "KinectCapture.h"
 #include <chrono>
+#include "opencv2\opencv.hpp"
+
+cv::VideoWriter video("outcpp.avi", CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080));
+
+bool iscapturing;
+bool captureLock;
 
 KinectCapture::KinectCapture()
 {
@@ -74,6 +80,9 @@ bool KinectCapture::Initialize()
 
 		} while (!bTemp);
 	}
+
+	iscapturing = false;
+	captureLock = false;
 
 	return bInitialized;
 }
@@ -153,10 +162,13 @@ void KinectCapture::GetDepthFrame(IMultiSourceFrame* pMultiFrame)
 
 void KinectCapture::GetColorFrame(IMultiSourceFrame* pMultiFrame)
 {
+
 	IColorFrameReference* pColorFrameReference = NULL;
 	IColorFrame* pColorFrame = NULL;
 	pMultiFrame->get_ColorFrameReference(&pColorFrameReference);
 	HRESULT hr = pColorFrameReference->AcquireFrame(&pColorFrame);
+
+	cv::Mat colorMat(1080, 1920, CV_8UC3);
 
 	if (SUCCEEDED(hr))
 	{
@@ -172,6 +184,21 @@ void KinectCapture::GetColorFrame(IMultiSourceFrame* pMultiFrame)
 
 		UINT nBufferSize = nColorFrameWidth * nColorFrameHeight * sizeof(RGB);
 		hr = pColorFrame->CopyConvertedFrameDataToArray(nBufferSize, reinterpret_cast<BYTE*>(pColorRGBX), ColorImageFormat_Bgra);
+
+		 //Following code taken from: https://gist.github.com/UnaNancyOwen/bff6c3342839592cd51e
+		
+			
+			UINT bufferSize = 0;
+			BYTE* pBuffer = nullptr;
+			hr = pColorFrame->AccessRawUnderlyingBuffer(&bufferSize, &pBuffer); // YUY2
+			if (SUCCEEDED(hr)) {
+				cv::Mat bufferMat(1080, 1920, CV_8UC2, pBuffer);
+				cv::cvtColor(bufferMat, colorMat, CV_YUV2BGR_YUYV);
+				video.write(colorMat);
+			}
+
+	
+		
 	}
 
 	SafeRelease(pColorFrame);
@@ -247,4 +274,9 @@ void KinectCapture::GetBodyIndexFrame(IMultiSourceFrame* pMultiFrame)
 
 	SafeRelease(pBodyIndexFrame);
 	SafeRelease(pBodyIndexFrameReference);
+}
+
+void KinectCapture::StopColorTextureRecording() 
+{
+	video.release();
 }

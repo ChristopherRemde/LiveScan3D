@@ -59,8 +59,6 @@ private:
 	bool m_bFrameCompression;
 	int m_iCompressionLevel;
 
-	bool isCapturingVideo;
-
 	FrameFileWriterReader m_framesFileWriterReader;
 
 
@@ -101,7 +99,6 @@ private:
 	void ReadIPFromFile();
 	void WriteIPToFile();
 	void createAlphaMat(cv::Mat &mat);
-	int captureVideo();
 
 
 };
