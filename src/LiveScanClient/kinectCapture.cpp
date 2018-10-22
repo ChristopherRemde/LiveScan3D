@@ -15,8 +15,7 @@
 #include "KinectCapture.h"
 #include <chrono>
 #include "opencv2\opencv.hpp"
-
-cv::VideoWriter video("outcpp.avi", CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080));
+#include "liveScanClient.h"
 
 bool iscapturing;
 bool captureLock;
@@ -271,12 +270,8 @@ void KinectCapture::GetBodyIndexFrame(IMultiSourceFrame* pMultiFrame)
 		UINT nBufferSize = nDepthFrameHeight * nDepthFrameWidth;
 		hr = pBodyIndexFrame->CopyFrameDataToArray(nBufferSize, pBodyIndex);
 	}
-
 	SafeRelease(pBodyIndexFrame);
 	SafeRelease(pBodyIndexFrameReference);
+	
 }
 
-void KinectCapture::StopColorTextureRecording() 
-{
-	video.release();
-}

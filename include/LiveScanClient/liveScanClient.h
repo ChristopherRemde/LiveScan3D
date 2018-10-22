@@ -25,6 +25,10 @@
 #include <thread>
 #include <mutex>
 
+
+extern string textureFileNameTimeStamp;
+extern cv::VideoWriter video;
+
 class LiveScanClient
 {
 public:
@@ -37,7 +41,7 @@ public:
     int                     Run(HINSTANCE hInstance, int nCmdShow);
 
 	bool m_bSocketThread;
-private:
+	
 	Calibration calibration;
 
 	bool m_bCalibrate;
@@ -84,6 +88,10 @@ private:
     ID2D1Factory* m_pD2DFactory;
 	RGB* m_pDepthRGBX;
 
+	
+
+
+
 	void UpdateFrame();
     void ProcessColor(RGB* pBuffer, int nWidth, int nHeight);
 	void ProcessDepth(const UINT16* pBuffer, int nHeight, int nWidth);
@@ -98,8 +106,7 @@ private:
 	void ShowFPS();
 	void ReadIPFromFile();
 	void WriteIPToFile();
-	void createAlphaMat(cv::Mat &mat);
-
+	void generateTimeStampString();
 
 };
 

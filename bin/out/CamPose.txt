@@ -1,6 +1,2 @@
 CamPoseFile for the LiveScan Meshing Software by ChrisR
 
-CamNo = 0
-TranslateX = 0
-TranslateY = 0
-TranslateZ = 0

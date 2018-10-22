@@ -23,6 +23,9 @@
 #include <opencv2/opencv.hpp> 
 #include <thread>
 
+bool captureStartLock;
+string textureFileNameTimeStamp("");
+cv::VideoWriter video(("Not initialized"), CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080));
 
 
 std::mutex m_mSocketThreadMutex;
@@ -68,6 +71,7 @@ LiveScanClient::LiveScanClient() :
 	m_nFilterNeighbors(10),
 	m_fFilterThreshold(0.01f),
 	frameCounter(0)
+
 {
 	pCapture = new KinectCapture();
 
@@ -454,8 +458,16 @@ void LiveScanClient::HandleSocket()
 	for (unsigned int i = 0; i < received.length(); i++)
 	{
 		//capture a frame
-		if (received[i] == MSG_CAPTURE_FRAME)
+		if (received[i] == MSG_CAPTURE_FRAME) 
+		{
 			m_bCaptureFrame = true;
+			if (captureStartLock == false)
+			{
+				captureStartLock = true;
+				generateTimeStampString();
+			}
+		}
+			
 		//calibrate
 		else if (received[i] == MSG_CALIBRATE)
 			m_bCalibrate = true;
@@ -527,6 +539,8 @@ void LiveScanClient::HandleSocket()
 		//send stored frame
 		else if (received[i] == MSG_REQUEST_STORED_FRAME)
 		{
+			captureStartLock = false;
+
 			byteToSend = MSG_STORED_FRAME;
 			m_pClientSocket->SendBytes(&byteToSend, 1);
 
@@ -573,6 +587,7 @@ void LiveScanClient::HandleSocket()
 		{
 			m_framesFileWriterReader.closeFileIfOpened();
 		}
+
 	}
 
 	if (m_bConfirmCaptured)
@@ -819,6 +834,18 @@ void LiveScanClient::WriteIPToFile()
 	file << lastUsedIPAddress;
 	file.close();
 }
+
+void LiveScanClient::generateTimeStampString()
+{
+	auto t = std::time(nullptr);
+	auto tm = *std::localtime(&t);
+	std::ostringstream oss;
+	oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+	textureFileNameTimeStamp = oss.str() + ".avi";	
+	
+	video = cv::VideoWriter(textureFileNameTimeStamp, CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080));
+}
+
 
 
 

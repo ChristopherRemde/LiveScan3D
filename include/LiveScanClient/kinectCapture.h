@@ -20,6 +20,7 @@
 #include "utils.h"
 #include "opencv2\opencv.hpp"
 
+
 class KinectCapture : public ICapture
 {
 public:
@@ -32,7 +33,6 @@ public:
 	void MapColorFrameToCameraSpace(Point3f *pCameraSpacePoints);
 	void MapDepthFrameToColorSpace(Point2f *pColorSpacePoints);
 	void MapColorFrameToDepthSpace(Point2f *pDepthSpacePoints);
-	void StopColorTextureRecording();
 private:	
 	ICoordinateMapper* pCoordinateMapper;
 	IKinectSensor* pKinectSensor;
