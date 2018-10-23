@@ -23,9 +23,10 @@
 #include <opencv2/opencv.hpp> 
 #include <thread>
 
+//Variables for recording the video texture
 bool captureStartLock;
 string textureFileNameTimeStamp("");
-cv::VideoWriter video(("Not initialized"), CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080));
+cv::VideoWriter videoTexture(("Not initialized"), CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080));
 
 
 std::mutex m_mSocketThreadMutex;
@@ -461,6 +462,8 @@ void LiveScanClient::HandleSocket()
 		if (received[i] == MSG_CAPTURE_FRAME) 
 		{
 			m_bCaptureFrame = true;
+
+			//If it is the first time the program recieves a capture message, after it has been started/stopped generate a timestamp
 			if (captureStartLock == false)
 			{
 				captureStartLock = true;
@@ -538,8 +541,8 @@ void LiveScanClient::HandleSocket()
 		}
 		//send stored frame
 		else if (received[i] == MSG_REQUEST_STORED_FRAME)
-		{
-			captureStartLock = false;
+		{			
+			captureStartLock = false; //If this message has been send, the recording is stopped, thus prepare the program to record a new video texture
 
 			byteToSend = MSG_STORED_FRAME;
 			m_pClientSocket->SendBytes(&byteToSend, 1);
@@ -835,15 +838,15 @@ void LiveScanClient::WriteIPToFile()
 	file.close();
 }
 
-void LiveScanClient::generateTimeStampString()
+void LiveScanClient::generateTimeStampString()  //Give the videoTexture Recording a new name, based on the time the record has started
 {
 	auto t = std::time(nullptr);
-	auto tm = *std::localtime(&t);
+	auto tm = *std::localtime(&t);  //Get the local time
 	std::ostringstream oss;
-	oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
-	textureFileNameTimeStamp = oss.str() + ".avi";	
+	oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S"); //Format the time into a string
+	textureFileNameTimeStamp = oss.str() + ".avi";	//Add .avi to the string so OpenCV knows the file format
 	
-	video = cv::VideoWriter(textureFileNameTimeStamp, CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080));
+	videoTexture = cv::VideoWriter(textureFileNameTimeStamp, CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080)); //Define the videoTexture with the new date as filename
 }
 
 

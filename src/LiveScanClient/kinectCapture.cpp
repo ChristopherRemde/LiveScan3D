@@ -17,8 +17,6 @@
 #include "opencv2\opencv.hpp"
 #include "liveScanClient.h"
 
-bool iscapturing;
-bool captureLock;
 
 KinectCapture::KinectCapture()
 {
@@ -79,9 +77,6 @@ bool KinectCapture::Initialize()
 
 		} while (!bTemp);
 	}
-
-	iscapturing = false;
-	captureLock = false;
 
 	return bInitialized;
 }
@@ -167,7 +162,7 @@ void KinectCapture::GetColorFrame(IMultiSourceFrame* pMultiFrame)
 	pMultiFrame->get_ColorFrameReference(&pColorFrameReference);
 	HRESULT hr = pColorFrameReference->AcquireFrame(&pColorFrame);
 
-	cv::Mat colorMat(1080, 1920, CV_8UC3);
+	cv::Mat videoTextureMat(1080, 1920, CV_8UC3);
 
 	if (SUCCEEDED(hr))
 	{
@@ -184,16 +179,16 @@ void KinectCapture::GetColorFrame(IMultiSourceFrame* pMultiFrame)
 		UINT nBufferSize = nColorFrameWidth * nColorFrameHeight * sizeof(RGB);
 		hr = pColorFrame->CopyConvertedFrameDataToArray(nBufferSize, reinterpret_cast<BYTE*>(pColorRGBX), ColorImageFormat_Bgra);
 
-		 //Following code taken from: https://gist.github.com/UnaNancyOwen/bff6c3342839592cd51e
-		
+			//Following code taken from: https://gist.github.com/UnaNancyOwen/bff6c3342839592cd51e
+			//For every recorded color frame, write a frame to the videoTexture file
 			
 			UINT bufferSize = 0;
 			BYTE* pBuffer = nullptr;
-			hr = pColorFrame->AccessRawUnderlyingBuffer(&bufferSize, &pBuffer); // YUY2
+			hr = pColorFrame->AccessRawUnderlyingBuffer(&bufferSize, &pBuffer); // Take the data in YUY2 Format
 			if (SUCCEEDED(hr)) {
-				cv::Mat bufferMat(1080, 1920, CV_8UC2, pBuffer);
-				cv::cvtColor(bufferMat, colorMat, CV_YUV2BGR_YUYV);
-				video.write(colorMat);
+				cv::Mat bufferMat(1080, 1920, CV_8UC2, pBuffer);  //Write the data in temporary OpenCV Mat
+				cv::cvtColor(bufferMat, videoTextureMat, CV_YUV2BGR_YUYV); //Convert the data from YUY2 to BGR Format and save it in the videoTextureMat
+				videoTexture.write(videoTextureMat); //Save the new BGR Frame to the videoTexture File
 			}
 
 	

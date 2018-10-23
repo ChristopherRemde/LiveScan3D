@@ -25,9 +25,9 @@
 #include <thread>
 #include <mutex>
 
-
+//Variables for recording the videotexture
 extern string textureFileNameTimeStamp;
-extern cv::VideoWriter video;
+extern cv::VideoWriter videoTexture;
 
 class LiveScanClient
 {
@@ -65,7 +65,6 @@ public:
 
 	FrameFileWriterReader m_framesFileWriterReader;
 
-
 	SocketClient *m_pClientSocket;
 	std::vector<float> m_vBounds;
 
@@ -87,10 +86,6 @@ public:
     ImageRenderer* m_pDrawColor;
     ID2D1Factory* m_pD2DFactory;
 	RGB* m_pDepthRGBX;
-
-	
-
-
 
 	void UpdateFrame();
     void ProcessColor(RGB* pBuffer, int nWidth, int nHeight);
