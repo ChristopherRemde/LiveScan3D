@@ -301,5 +301,11 @@ namespace KinectServer
             if (eChanged != null)
                 eChanged();
         }
+
+        public void sendStartMSG()
+        {
+            byteToSend[0] = 7;
+            SendByte();
+        }
     }
 }

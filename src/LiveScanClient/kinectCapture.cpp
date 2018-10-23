@@ -182,6 +182,8 @@ void KinectCapture::GetColorFrame(IMultiSourceFrame* pMultiFrame)
 			//Following code taken from: https://gist.github.com/UnaNancyOwen/bff6c3342839592cd51e
 			//For every recorded color frame, write a frame to the videoTexture file
 			
+		if (captureVideoTexture == true)
+		{
 			UINT bufferSize = 0;
 			BYTE* pBuffer = nullptr;
 			hr = pColorFrame->AccessRawUnderlyingBuffer(&bufferSize, &pBuffer); // Take the data in YUY2 Format
@@ -191,7 +193,7 @@ void KinectCapture::GetColorFrame(IMultiSourceFrame* pMultiFrame)
 				videoTexture.write(videoTextureMat); //Save the new BGR Frame to the videoTexture File
 			}
 
-	
+		}
 		
 	}
 

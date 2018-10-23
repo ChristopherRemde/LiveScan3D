@@ -25,6 +25,7 @@
 
 //Variables for recording the video texture
 bool captureStartLock;
+bool captureVideoTexture;
 string textureFileNameTimeStamp("");
 cv::VideoWriter videoTexture(("Not initialized"), CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080));
 
@@ -462,7 +463,7 @@ void LiveScanClient::HandleSocket()
 		if (received[i] == MSG_CAPTURE_FRAME) 
 		{
 			m_bCaptureFrame = true;
-
+			captureVideoTexture = true;
 			//If it is the first time the program recieves a capture message, after it has been started/stopped generate a timestamp
 			if (captureStartLock == false)
 			{
@@ -543,6 +544,7 @@ void LiveScanClient::HandleSocket()
 		else if (received[i] == MSG_REQUEST_STORED_FRAME)
 		{			
 			captureStartLock = false; //If this message has been send, the recording is stopped, thus prepare the program to record a new video texture
+			captureVideoTexture = false;
 
 			byteToSend = MSG_STORED_FRAME;
 			m_pClientSocket->SendBytes(&byteToSend, 1);

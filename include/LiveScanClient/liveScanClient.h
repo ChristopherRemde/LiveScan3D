@@ -28,6 +28,7 @@
 //Variables for recording the videotexture
 extern string textureFileNameTimeStamp;
 extern cv::VideoWriter videoTexture;
+extern bool captureVideoTexture;
 
 class LiveScanClient
 {
