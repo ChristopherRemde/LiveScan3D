@@ -32,6 +32,9 @@ using System.Net.Sockets;
 using System.Timers;
 
 using System.Diagnostics;
+using Newtonsoft.Json;
+
+
 
 
 namespace KinectServer
@@ -69,6 +72,8 @@ namespace KinectServer
         KinectSettings oSettings = new KinectSettings();
         //The live view window class
         OpenGLWindow oOpenGLWindow;
+
+        
 
         public MainWindowForm()
         {
@@ -510,21 +515,38 @@ namespace KinectServer
 
             AllCameraPosesForSaving = oServer.lCameraPoses;  //Get all current camera transforms
 
+            camPoseFile camPoseFile1 = new camPoseFile();
+            camPoseFile1.camPoses = new camPosition[AllCameraPosesForSaving.Count];
+
+            for (int i = 0; i < AllCameraPosesForSaving.Count; i++)
+            {
+                camPosition currentCamPos = new camPosition(AllCameraPosesForSaving[i].t[0], AllCameraPosesForSaving[i].t[1], AllCameraPosesForSaving[i].t[2]);
+                camPoseFile1.camPoses[i] = currentCamPos;
+            }
+
+            string JSONFile = JsonConvert.SerializeObject(camPoseFile1);
+
             using (StreamWriter sw = File.CreateText(CamPoseFullFilePath))
             {
-                sw.WriteLine("CamPoseFile for the LiveScan Meshing Software by ChrisR");
-                sw.WriteLine("");
-
-                for (int i = 0; i < AllCameraPosesForSaving.Count; i++)
-                {
-                    sw.WriteLine("CamNo = " + i);
-
-                    //Position of the cameras
-                    sw.WriteLine("TranslateX = " + AllCameraPosesForSaving[i].t[0]);   
-                    sw.WriteLine("TranslateY = " + AllCameraPosesForSaving[i].t[1]);
-                    sw.WriteLine("TranslateZ = " + AllCameraPosesForSaving[i].t[2]);
-                }
+                sw.WriteLine(JSONFile);
             }
+        }
+    }
+
+    class camPoseFile
+    {
+        public camPosition[] camPoses;
+    }
+
+    public struct camPosition
+    {
+        public float x, y, z;
+
+        public camPosition(float px, float py, float pz)
+        {
+            x = px;
+            y = py;
+            z = pz;
         }
     }
 }

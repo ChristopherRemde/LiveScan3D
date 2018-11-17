@@ -1,0 +1,6 @@
+CamPoseFile for the LiveScan Meshing Software by ChrisR
+
+CamNo = 0
+TranslateX = 1.618804
+TranslateY = -0.1587886
+TranslateZ = 1.054561
