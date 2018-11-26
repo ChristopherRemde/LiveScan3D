@@ -1,2 +1,0 @@
-CamPoseFile for the LiveScan Meshing Software by ChrisR
-
