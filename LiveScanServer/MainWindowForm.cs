@@ -511,17 +511,24 @@ namespace KinectServer
 
         private void saveCamPoseFile(string saveToThisDir)
         {
+
+            //Save JSON file for Mesher for LiveScan
+
             string CamPoseFullFilePath = saveToThisDir + "\\CamPose.txt";
 
             AllCameraPosesForSaving = oServer.lCameraPoses;  //Get all current camera transforms
 
             camPoseFile camPoseFile1 = new camPoseFile();
-            camPoseFile1.camPoses = new camPosition[AllCameraPosesForSaving.Count];
+            camPoseFile1.camPositions = new camPosition[AllCameraPosesForSaving.Count];
+            camPoseFile1.camRotations = new camRotation[AllCameraPosesForSaving.Count];
 
             for (int i = 0; i < AllCameraPosesForSaving.Count; i++)
             {
                 camPosition currentCamPos = new camPosition(AllCameraPosesForSaving[i].t[0], AllCameraPosesForSaving[i].t[1], AllCameraPosesForSaving[i].t[2]);
-                camPoseFile1.camPoses[i] = currentCamPos;
+                camPoseFile1.camPositions[i] = currentCamPos;
+
+                camRotation currentCamRot = new camRotation(AllCameraPosesForSaving[i].R[0, 0], AllCameraPosesForSaving[i].R[0, 1], AllCameraPosesForSaving[i].R[0, 2], AllCameraPosesForSaving[i].R[1, 0], AllCameraPosesForSaving[i].R[1, 1], AllCameraPosesForSaving[i].R[1, 2], AllCameraPosesForSaving[i].R[2, 0], AllCameraPosesForSaving[i].R[2, 1], AllCameraPosesForSaving[i].R[2, 2]);
+                camPoseFile1.camRotations[i] = currentCamRot;
             }
 
             string JSONFile = JsonConvert.SerializeObject(camPoseFile1);
@@ -530,15 +537,46 @@ namespace KinectServer
             {
                 sw.WriteLine(JSONFile);
             }
+
+            //Save JSON file for Unreal Engine
+
+            string CamPoseForUnrealFullFilePath = saveToThisDir + "\\CamPoseForUnreal.txt";
+
+            camPoseFileForUnreal camPoseFileForUnreal1 = new camPoseFileForUnreal();
+            camPoseFileForUnreal1.camTransformsForUnreal = new camTransformForUnreal[AllCameraPosesForSaving.Count];
+
+            for (int i = 0; i < AllCameraPosesForSaving.Count; i++)
+            {
+                string explicitCamName = "CameraNumber" + i;
+                camTransformForUnreal currentCamPos = new camTransformForUnreal(explicitCamName, AllCameraPosesForSaving[i].t[0], AllCameraPosesForSaving[i].t[1], AllCameraPosesForSaving[i].t[2], AllCameraPosesForSaving[i].R[0, 0], AllCameraPosesForSaving[i].R[0, 1], AllCameraPosesForSaving[i].R[0, 2], AllCameraPosesForSaving[i].R[1, 0], AllCameraPosesForSaving[i].R[1, 1], AllCameraPosesForSaving[i].R[1, 2], AllCameraPosesForSaving[i].R[2, 0], AllCameraPosesForSaving[i].R[2, 1], AllCameraPosesForSaving[i].R[2, 2]);
+                camPoseFileForUnreal1.camTransformsForUnreal[i] = currentCamPos;
+            }
+
+            string JSONFileForUnreal = JsonConvert.SerializeObject(camPoseFileForUnreal1);
+
+            JSONFileForUnreal = JSONFileForUnreal.Remove(0, 26);
+            char[] trimFromEnd = {'}'};
+            JSONFileForUnreal = JSONFileForUnreal.TrimEnd(trimFromEnd);
+
+            using (StreamWriter sw = File.CreateText(CamPoseForUnrealFullFilePath))
+            {
+                sw.WriteLine(JSONFileForUnreal);
+            }
         }
     }
 
     class camPoseFile
     {
-        public camPosition[] camPoses;
+        public camPosition[] camPositions;
+        public camRotation[] camRotations;
     }
 
-    public struct camPosition
+    class camPoseFileForUnreal
+    {
+        public camTransformForUnreal[] camTransformsForUnreal;
+    }
+
+    public struct camPosition  //A struct which holds the world coordinate position of a camera in XYZ format, equals the struct of AffineTransform.t 
     {
         public float x, y, z;
 
@@ -547,6 +585,47 @@ namespace KinectServer
             x = px;
             y = py;
             z = pz;
+        }
+    }
+
+    public struct camRotation //A struct which holds the rotation of a camera. Its a 3x3 matrix, equaling the struct of AffineTransform.R
+    {
+        public float xx, xy, xz, yx, yy, yz, zx, zy, zz;
+
+        public camRotation(float rxx, float rxy, float rxz, float ryx, float ryy, float ryz, float rzx, float rzy, float rzz)
+        {
+            xx = rxx;
+            xy = rxy;
+            xz = rxz;
+            yx = ryx;
+            yy = ryy;
+            yz = ryz;
+            zx = rzx;
+            zy = rzy;
+            zz = rzz;
+        }
+    }
+
+    public struct camTransformForUnreal
+    {
+        public string name;
+        public float Translationx, Translationy, Translationz, Rotationxx, Rotationxy, Rotationxz, Rotationyx, Rotationyy, Rotationyz, Rotationzx, Rotationzy, Rotationzz;
+
+        public camTransformForUnreal(string camNumber, float Tx, float Ty, float Tz, float Rxx, float Rxy, float Rxz, float Ryx, float Ryy, float Ryz, float Rzx, float Rzy, float Rzz)
+        {
+            name = camNumber;
+            Translationx = Tx;
+            Translationy = Ty;
+            Translationz = Tz;
+            Rotationxx = Rxx;
+            Rotationxy = Rxy;
+            Rotationxz = Rxz;
+            Rotationyx = Ryx;
+            Rotationyy = Ryy;
+            Rotationyz = Ryz;
+            Rotationzx = Rzx;
+            Rotationzy = Rxy;
+            Rotationzz = Rzz;
         }
     }
 }
