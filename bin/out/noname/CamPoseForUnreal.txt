@@ -1,1 +1,0 @@
-[{"camName":"CameraNumber0","Translationx":2.06895876,"Translationy":0.6332448,"Translationz":1.72826552,"Rotationxx":0.303355,"Rotationxy":-0.329154,"Rotationxz":-0.894222,"Rotationyx":-0.952471,"Rotationyy":-0.132154,"Rotationyz":-0.274471,"Rotationzx":-0.0278322,"Rotationzy":-0.329154,"Rotationzz":-0.353599}]
