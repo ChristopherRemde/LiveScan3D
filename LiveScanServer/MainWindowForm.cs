@@ -624,7 +624,7 @@ namespace KinectServer
             Rotationyy = Ryy;
             Rotationyz = Ryz;
             Rotationzx = Rzx;
-            Rotationzy = Rxy;
+            Rotationzy = Rzy;
             Rotationzz = Rzz;
         }
     }
