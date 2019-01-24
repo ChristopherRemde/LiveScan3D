@@ -462,7 +462,6 @@ void LiveScanClient::HandleSocket()
 		//capture a frame
 		if (received[i] == MSG_CAPTURE_FRAME) 
 		{
-			SetStatusMessage(L"Recieved MSG_CAPTURE_FRAME", 5, true);
 			m_bCaptureFrame = true;
 			captureVideoTexture = true;
 			//If it is the first time the program recieves a capture message, after it has been started/stopped generate a timestamp
