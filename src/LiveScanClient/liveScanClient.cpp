@@ -462,6 +462,7 @@ void LiveScanClient::HandleSocket()
 		//capture a frame
 		if (received[i] == MSG_CAPTURE_FRAME) 
 		{
+			SetStatusMessage(L"Recieved MSG_CAPTURE_FRAME", 5, true);
 			m_bCaptureFrame = true;
 			captureVideoTexture = true;
 			//If it is the first time the program recieves a capture message, after it has been started/stopped generate a timestamp
@@ -544,6 +545,7 @@ void LiveScanClient::HandleSocket()
 		else if (received[i] == MSG_REQUEST_STORED_FRAME)
 		{			
 			captureStartLock = false; //If this message has been send, the recording is stopped, thus prepare the program to record a new video texture
+			videoTexture.release();
 			captureVideoTexture = false;
 
 			byteToSend = MSG_STORED_FRAME;
@@ -849,6 +851,7 @@ void LiveScanClient::generateTimeStampString()  //Give the videoTexture Recordin
 	textureFileNameTimeStamp = oss.str() + ".avi";	//Add .avi to the string so OpenCV knows the file format
 	
 	videoTexture = cv::VideoWriter(textureFileNameTimeStamp, CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(1920, 1080)); //Define the videoTexture with the new date as filename
+	
 }
 
 

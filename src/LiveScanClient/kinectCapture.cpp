@@ -193,6 +193,8 @@ void KinectCapture::GetColorFrame(IMultiSourceFrame* pMultiFrame)
 				videoTexture.write(videoTextureMat); //Save the new BGR Frame to the videoTexture File
 			}
 
+			captureVideoTexture = false;
+
 		}
 		
 	}
