@@ -31,6 +31,7 @@ namespace KinectServer
         Socket oServerSocket;
 
         bool bServerRunning = false;
+        bool waitForSubToStart = false;
 
         KinectSettings oSettings;
         object oClientSocketLock = new object();
@@ -232,6 +233,71 @@ namespace KinectServer
             }
         }
 
+        /// <summary>
+        /// Send temporal Sync Data to all clients
+        /// </summary>
+        public void SendTemporalSyncData()
+        {
+            lock (oClientSocketLock)
+            {
+                if(lClientSockets.Count > 1 && oSettings.bEnableSync)
+                {
+                    byte syncOffSetCounter = 1;
+
+                    for (int i = 0; i < lClientSockets.Count; i++)
+                    {
+                        lClientSockets[i].SendTemporalSyncStatus(true, syncOffSetCounter);
+                        syncOffSetCounter++;
+                    }
+
+                    waitForSubToStart = true;
+                }
+
+                else
+                {
+                    for (int i = 0; i < lClientSockets.Count; i++)
+                    {
+                        lClientSockets[i].SendTemporalSyncStatus(false, 0);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when a sub client has started. This checks if all sub clients have already started. If yes, we initialize the master
+        /// </summary>
+        public void CheckForMasterStart()
+        {
+            if (!oSettings.bEnableSync || !waitForSubToStart)
+            {
+                return;
+            }
+
+            bool allSubsStarted = true;
+
+            lock (oClientSocketLock)
+            {
+                for (int i = 0; i < lClientSockets.Count; i++)
+                {
+                    if (!lClientSockets[i].bSubStarted && lClientSockets[i].currentTempSyncState == KinectSocket.eTempSyncConfig.SUBORDINATE)
+                    {
+                        allSubsStarted = false;
+                        break;
+                    }
+                }
+
+                if (allSubsStarted)
+                {
+                    for (int i = 0; i < lClientSockets.Count; i++)
+                    {
+                        lClientSockets[i].SendMasterInitialize();
+                    }
+                }
+            }
+
+           
+        }
+
         public bool GetStoredFrame(List<List<byte>> lFramesRGB, List<List<Single>> lFramesVerts)
         {
             bool bNoMoreStoredFrames;
@@ -360,6 +426,8 @@ namespace KinectServer
                             lClientSockets.Add(new KinectSocket(newClient));
                             lClientSockets[lClientSockets.Count - 1].SendSettings(oSettings);
                             lClientSockets[lClientSockets.Count - 1].eChanged += new SocketChangedHandler(SocketListChanged);
+                            lClientSockets[lClientSockets.Count - 1].eSubInitialized += new SubOrdinateInitialized(CheckForMasterStart);
+
                             if (eSocketListChanged != null)
                             {
                                 eSocketListChanged(lClientSockets);
@@ -434,6 +502,11 @@ namespace KinectServer
                             {
                                 lClientSockets[i].ReceiveFrame();
                                 lClientSockets[i].bLatestFrameReceived = true;
+                            }
+
+                            else if (buffer[0] == 4)
+                            {
+                                lClientSockets[i].ReceiveTemporalSyncStatus();
                             }
 
                             buffer = lClientSockets[i].Receive(1);

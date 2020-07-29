@@ -27,7 +27,10 @@ enum INCOMING_MESSAGE_TYPE
 	MSG_REQUEST_STORED_FRAME,
 	MSG_REQUEST_LAST_FRAME,
 	MSG_RECEIVE_CALIBRATION,
-	MSG_CLEAR_STORED_FRAMES
+	MSG_CLEAR_STORED_FRAMES,
+	MSG_SET_TEMPSYNC_ON,
+	MSG_SET_TEMPSYNC_OFF,
+	MSG_START_MASTER
 };
 
 enum OUTGOING_MESSAGE_TYPE
@@ -35,7 +38,8 @@ enum OUTGOING_MESSAGE_TYPE
 	MSG_CONFIRM_CAPTURED,
 	MSG_CONFIRM_CALIBRATED,
 	MSG_STORED_FRAME,
-	MSG_LAST_FRAME
+	MSG_LAST_FRAME,
+	MSG_CONFIRM_TEMP_SYNC_STATUS
 };
 
 typedef struct Point3f
@@ -45,16 +49,26 @@ typedef struct Point3f
 		this->X = 0;
 		this->Y = 0;
 		this->Z = 0;
+		this->Invalid = false;
+	}
+	Point3f(float X, float Y, float Z, bool invalid)
+	{
+		this->X = X;
+		this->Y = Y;
+		this->Z = Z;
+		this->Invalid = invalid;
 	}
 	Point3f(float X, float Y, float Z)
 	{
 		this->X = X;
 		this->Y = Y;
 		this->Z = Z;
+		this->Invalid = false;
 	}
 	float X;
 	float Y;
 	float Z;
+	bool Invalid = false;
 } Point3f;
 
 typedef struct Point3s

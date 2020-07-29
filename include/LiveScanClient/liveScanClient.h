@@ -43,6 +43,9 @@ private:
 	bool m_bFilter;
 	bool m_bStreamOnlyBodies;
 
+	bool m_bIsMaster;
+	bool m_bIsSubOrdinate;
+
 	ICapture *pCapture;
 
 	int m_nFilterNeighbors;
@@ -51,10 +54,15 @@ private:
 	bool m_bCaptureFrame;
 	bool m_bConnected;
 	bool m_bConfirmCaptured;
+	bool m_bConfirmTempSyncState;
+	bool m_bConfirmSubOrdinateStarted;
 	bool m_bConfirmCalibrated;
 	bool m_bShowDepth;
 	bool m_bFrameCompression;
 	int m_iCompressionLevel;
+
+	enum tempSyncConfig { MASTER, SUBORDINATE, STANDALONE };
+	tempSyncConfig currentTempSyncState;
 
 	FrameFileWriterReader m_framesFileWriterReader;
 
@@ -73,7 +81,7 @@ private:
     DWORD m_nFramesSinceUpdate;
 
 	Point3f* m_pCameraSpaceCoordinates;
-	RGB* m_pColorInDepthSpace;
+	RGB* m_pColorInColorSpace;
 	UINT16* m_pDepthInColorSpace;
 
     // Direct2D

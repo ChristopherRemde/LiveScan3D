@@ -61,6 +61,9 @@ namespace KinectServer
             chMerge.Checked = oSettings.bMergeScansForSave;
             txtICPIters.Text = oSettings.nNumICPIterations.ToString();
             txtRefinIters.Text = oSettings.nNumRefineIters.ToString();
+
+            chSync.Checked = oSettings.bEnableSync;
+
             if (oSettings.bSaveAsBinaryPLY)
             {
                 rBinaryPly.Checked = true;
@@ -78,7 +81,11 @@ namespace KinectServer
         void UpdateClients()
         {
             if (bFormLoaded)
+            {
                 oServer.SendSettings();
+                oServer.SendTemporalSyncData();
+            }
+
         }
 
         void UpdateMarkerFields()
@@ -339,6 +346,23 @@ namespace KinectServer
                     oSettings.iCompressionLevel = 0;
             }
             UpdateClients();
+        }
+
+
+        private void chSync_CheckedChanged(object sender, EventArgs e)
+        {
+            oSettings.bEnableSync = chSync.Checked;
+            UpdateClients();
+        }
+
+        private void grSync_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lbSyncWarning_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

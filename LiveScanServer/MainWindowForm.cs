@@ -75,6 +75,8 @@ namespace KinectServer
                 IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 Stream stream = new FileStream("settings.bin", FileMode.Open, FileAccess.Read);
                 oSettings = (KinectSettings)formatter.Deserialize(stream);
+                //This always needs to be set to false on startup, as we can only activate it when all Kinects are already connected
+                oSettings.bEnableSync = false;
                 stream.Close();
             }
             catch(Exception)

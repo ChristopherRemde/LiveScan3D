@@ -23,6 +23,7 @@ using System.Net.Sockets;
 namespace KinectServer
 {
     public delegate void SocketChangedHandler();
+    public delegate void SubOrdinateInitialized();
 
     public class KinectSocket
     {
@@ -33,6 +34,10 @@ namespace KinectServer
         public bool bStoredFrameReceived = false;
         public bool bNoMoreStoredFrames = true;
         public bool bCalibrated = false;
+        public bool bSubStarted = false;
+
+        public enum eTempSyncConfig { MASTER, SUBORDINATE, STANDALONE }
+        public eTempSyncConfig currentTempSyncState = eTempSyncConfig.STANDALONE;
         //The pose of the sensor in the scene (used by the OpenGLWindow to show the sensor)
         public AffineTransform oCameraPose = new AffineTransform();
         //The transform that maps the vertices in the sensor coordinate system to the world corrdinate system.
@@ -45,11 +50,14 @@ namespace KinectServer
         public List<Body> lBodies = new List<Body>(); 
 
         public event SocketChangedHandler eChanged;
+        public event SubOrdinateInitialized eSubInitialized;
 
         public KinectSocket(Socket clientSocket)
         {
             oSocket = clientSocket;
             sSocketState = oSocket.RemoteEndPoint.ToString() + " Calibrated = false";
+
+            UpdateSocketState();
         }
 
         public void CaptureFrame()
@@ -121,6 +129,38 @@ namespace KinectServer
             SendByte();
         }
 
+        /// <summary>
+        /// Send the device the command to restart with Temporal Sync Enabled or Disabled
+        /// </summary>
+        /// <param name="tempSyncOn">Enable/Disable Temporal Sync</param>
+        /// <param name="syncOffSetMultiplier">Only set when this device should be a subordinate. Should be a unique number in ascending order for each sub</param>
+        public void SendTemporalSyncStatus(bool tempSyncOn, byte syncOffSetMultiplier)
+        {         
+            if (tempSyncOn)
+            {
+                byte[] data = new byte[2];
+                data[0] = 7;
+                data[1] = syncOffSetMultiplier;
+                if (SocketConnected())
+                    oSocket.Send(data);
+            }
+
+            else
+            {
+                byteToSend[0] = 8;
+                SendByte();
+            }
+        }
+
+        /// <summary>
+        /// Sends the master device the command to Start. Should only be called when all subs have started
+        /// </summary>
+        public void SendMasterInitialize()
+        {
+            byteToSend[0] = 9;
+            SendByte();
+        }
+
         public void ReceiveCalibrationData()
         {
             bCalibrated = true;
@@ -146,6 +186,42 @@ namespace KinectServer
             }
 
             UpdateSocketState();
+        }
+
+        //Gets the TemporalSyncStatus from the device
+        public void ReceiveTemporalSyncStatus()
+        {
+            byte tempSyncState;
+            byte[] buffer = new byte[1024];
+
+            while (oSocket.Available == 0)
+            {
+                if (!SocketConnected())
+                    return;
+            }
+
+            oSocket.Receive(buffer, 3, SocketFlags.None);
+            tempSyncState = buffer[0];
+
+            if (tempSyncState == 0)
+            {
+                currentTempSyncState = eTempSyncConfig.SUBORDINATE;
+                bSubStarted = true;
+                eSubInitialized?.Invoke();
+            }
+
+            else if(tempSyncState == 1)
+            {
+                currentTempSyncState = eTempSyncConfig.MASTER;
+            }
+
+            else if (tempSyncState == 2)
+            {
+                currentTempSyncState = eTempSyncConfig.STANDALONE;
+            }
+
+            UpdateSocketState();
+
         }
 
         public void ReceiveFrame()
@@ -293,13 +369,23 @@ namespace KinectServer
 
         public void UpdateSocketState()
         {
-            if (bCalibrated)
-                sSocketState = oSocket.RemoteEndPoint.ToString() + " Calibrated = true";
-            else
-                sSocketState = oSocket.RemoteEndPoint.ToString() + " Calibrated = false";
+            string tempSyncMessage = "";
 
-            if (eChanged != null)
-                eChanged();
+            switch (currentTempSyncState)
+            {
+                case eTempSyncConfig.MASTER:
+                    tempSyncMessage = "[MASTER]";
+                    break;
+                case eTempSyncConfig.SUBORDINATE:
+                    tempSyncMessage = "[SUBORDINATE]";
+                    break;
+                default:
+                    break;
+            }
+
+            sSocketState = oSocket.RemoteEndPoint.ToString() + " Calibrated = " + bCalibrated + " " + tempSyncMessage;
+
+            eChanged?.Invoke();
         }
     }
 }
